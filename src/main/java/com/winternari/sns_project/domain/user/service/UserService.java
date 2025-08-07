@@ -1,8 +1,11 @@
 package com.winternari.sns_project.domain.user.service;
 
 import com.winternari.sns_project.domain.user.dto.SignUpRequest;
+import com.winternari.sns_project.domain.user.dto.UserResponseDto;
+import com.winternari.sns_project.domain.user.dto.UserUpdateRequest;
 import com.winternari.sns_project.domain.user.entity.User;
 import com.winternari.sns_project.domain.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,12 +19,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     // 회원가입
-    public User signup(SignUpRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
-        }
+    public UserResponseDto signup(SignUpRequest request) {
+        userRepository.findByEmail(request.getEmail())
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+                });
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -29,7 +32,8 @@ public class UserService {
                 .username(request.getUsername())
                 .build();
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return UserResponseDto.fromEntity(savedUser);
     }
 
     // 이메일로 사용자 조회
@@ -37,15 +41,19 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public User updateUser(Long id, User updatedUser) {
+    // 사용자 정보 업데이트
+    public UserResponseDto updateUser(Long id, UserUpdateRequest request) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. id: " + id));
-        if (updatedUser.getUsername() != null) {
-            existingUser.setUsername(updatedUser.getUsername());
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다. id: " + id));
+
+        if (request.getUsername() != null) {
+            existingUser.setUsername(request.getUsername());
         }
-        if (updatedUser.getProfileImage() != null) {
-            existingUser.setProfileImage(updatedUser.getProfileImage());
+        if (request.getProfileImage() != null) {
+            existingUser.setProfileImage(request.getProfileImage());
         }
-        return userRepository.save(existingUser);
+
+        User updatedUser = userRepository.save(existingUser);
+        return UserResponseDto.fromEntity(updatedUser);
     }
 }
