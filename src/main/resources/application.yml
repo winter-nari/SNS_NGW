@@ -1,4 +1,0 @@
-jwt:
-  secret: "JfK09ZGN7j4xwY8QAcMol/mYM1aoOR6rFJXhveyxpcg7n5/NmnpJ67NJ2WqpKB1Jgvhb9lqi1GXVUgv6+1TnEA=="
-  access-token-expiration: 3600000 # 1시간
-  refresh-token-expiration: 604800000 # 7일
