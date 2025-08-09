@@ -39,7 +39,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/signup",
-                                "/api/auth/refresh-token"
+                                "/api/auth/refresh-token",
+                                "/uploads/**"
                         ).permitAll() // 인증 없이 접근 허용할 경로
                         .anyRequest().authenticated() // 나머지는 인증 필요
                 )
